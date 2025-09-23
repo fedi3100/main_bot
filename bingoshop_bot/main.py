@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 import sys
@@ -34,34 +33,33 @@ PRODUCTS = {
     "high_limit": {
         "name": "High Limit SMTP",
         "price": 100,
-        "description": "50K Sending Limit\nSends To Inbox (Aged Gmail Tested)\nSTARTTLS Encryption Enabled\nSPF & DMARC Authentication Validated\nFresh Hacked SMTP\nSMS + Email Support\n7 Day Free Replacements",
+        "description": "50K Sending Limit<br>Sends To Inbox (Aged Gmail Tested)<br>STARTTLS Encryption Enabled<br>SPF & DMARC Authentication Validated<br>Fresh Hacked SMTP<br>SMS + Email Support<br>7 Day Free Replacements",
     },
     "spoofable": {
         "name": "Spoofable SMTP",
         "price": 200,
-        "description": "50K Sending Limit\nSends To Inbox (Aged Gmail Tested)\nSTARTTLS Encryption Enabled\nSPF & DMARC Authentication Validated\nFresh Hacked SMTP\nSMS + Email Support\nSupports Sender Address Spoofing\nIncludes Multiple Spoofing Methods\nMulti-Provider Spoofing Support\n7 Day Free Replacements\nIncludes SenderV4 Mailer Script",
+        "description": "50K Sending Limit<br>Sends To Inbox (Aged Gmail Tested)<br>STARTTLS Encryption Enabled<br>SPF & DMARC Authentication Validated<br>Fresh Hacked SMTP<br>SMS + Email Support<br>Supports Sender Address Spoofing<br>Includes Multiple Spoofing Methods<br>Multi-Provider Spoofing Support<br>7 Day Free Replacements<br>Includes SenderV4 Mailer Script",
     },
     "custom_spoofable": {
         "name": "Custom Spoofable SMTP",
         "price": 300,
-        "description": "50K Sending Limit\nSends To Inbox (Aged Gmail Tested)\nSTARTTLS Encryption Enabled\nSPF & DMARC Authentication Validated\nFresh Hacked SMTP\nSMS + Email Support\nSupports Sender Address Spoofing\nIncludes Multiple Spoofing Methods\nMulti-Provider Spoofing Support\nYour Own Custom SMTP Domain Name\n7 Day Free Replacements\nIncludes SenderV4 Mailer Script",
+        "description": "50K Sending Limit<br>Sends To Inbox (Aged Gmail Tested)<br>STARTTLS Encryption Enabled<br>SPF & DMARC Authentication Validated<br>Fresh Hacked SMTP<br>SMS + Email Support<br>Supports Sender Address Spoofing<br>Includes Multiple Spoofing Methods<br>Multi-Provider Spoofing Support<br>Your Own Custom SMTP Domain Name<br>7 Day Free Replacements<br>Includes SenderV4 Mailer Script",
     },
 }
 
 user_orders = {}
 
 
-# Start menu
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("📦 SMTPS", callback_data="smtps_menu")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
-        "🛍️ Welcome to BingoShop!\n\n✅ Inbox All Providers\n✅ 7 Day Free Replacement\n✅ Fast Delivery",
+        "🛍️ Welcome to <b>BingoShop</b>!\n\n✅ Inbox All Providers\n✅ 7 Day Free Replacement\n✅ Fast Delivery",
         reply_markup=reply_markup,
+        parse_mode="HTML",
     )
 
 
-# SMTPs menu
 async def smtps_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -70,12 +68,11 @@ async def smtps_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("High Limit SMTP - $100", callback_data="product_high_limit")],
         [InlineKeyboardButton("Spoofable SMTP - $200", callback_data="product_spoofable")],
         [InlineKeyboardButton("Custom Spoofable SMTP - $300", callback_data="product_custom_spoofable")],
-        [InlineKeyboardButton("⬅ Retour", callback_data="main_menu")],
+        [InlineKeyboardButton("🔙 Retour", callback_data="start_menu")],
     ]
     await query.edit_message_text("📦 Choose an SMTP option:", reply_markup=InlineKeyboardMarkup(keyboard))
 
 
-# Show product details
 async def show_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -85,16 +82,15 @@ async def show_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = [
         [InlineKeyboardButton("💳 Buy Now", callback_data=f"buy_{product_id}")],
-        [InlineKeyboardButton("⬅ Retour", callback_data="smtps_menu")],
+        [InlineKeyboardButton("🔙 Retour", callback_data="smtps_menu")],
     ]
     await query.edit_message_text(
-        f"🚀 *{product['name']}*\n💵 Price: *${product['price']}*\n\n📝 Description:\n{product['description']}",
-        parse_mode="MarkdownV2",
+        f"<b>{product['name']}</b>\n💵 Price: ${product['price']}\n\n📝 Description:<br>{product['description']}",
         reply_markup=InlineKeyboardMarkup(keyboard),
+        parse_mode="HTML",
     )
 
 
-# Buy product (show wallets)
 async def buy_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -105,31 +101,30 @@ async def buy_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_orders[user_id] = {"product": product["name"], "price": product["price"], "status": "pending_payment"}
 
+    keyboard = [[InlineKeyboardButton("🔙 Retour", callback_data=f"product_{product_id}")]]
     payment_text = (
-        f"💳 Please send *${product['price']}* to one of these wallets:\n\n"
-        f"💰 *Bitcoin (BTC):*\n`{BTC_WALLET}`\n\n"
-        f"💰 *USDT (TRC20):*\n`{USDT_WALLET}`\n\n"
-        "📸 After payment, send a screenshot here.\n"
-        "⏱️ Your SMTP will be delivered within 7 minutes.\n\n"
+        f"Please send <b>${product['price']}</b> to one of these wallets:<br><br>"
+        f"💰 <b>Bitcoin (BTC):</b><br><code>{BTC_WALLET}</code><br><br>"
+        f"💰 <b>USDT (TRC20):</b><br><code>{USDT_WALLET}</code><br><br>"
+        "After payment, send a screenshot here.<br>"
+        "Your SMTP will be delivered within 7 minutes.<br><br>"
         "Support: @support_bot"
     )
 
-    keyboard = [[InlineKeyboardButton("⬅ Retour", callback_data=f"product_{product_id}")]]
-    await query.edit_message_text(payment_text, parse_mode="MarkdownV2", reply_markup=InlineKeyboardMarkup(keyboard))
+    await query.edit_message_text(payment_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode="HTML")
 
 
-# Handle screenshot
 async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     if user_id not in user_orders:
-        await update.message.reply_text("❌ Please select a product first with /start")
+        await update.message.reply_text("⚠️ Please select a product first with /start")
         return
 
     order = user_orders[user_id]
     caption = (
         f"[BingoShop] Payment screenshot received!\n"
-        f"👤 User: {update.message.from_user.full_name} (@{update.message.from_user.username})\n"
-        f"📦 Product: {order['product']}\n💵 Price: ${order['price']}\n📌 Status: {order['status']}"
+        f"User: {update.message.from_user.full_name} (@{update.message.from_user.username})\n"
+        f"Product: {order['product']}\nPrice: ${order['price']}\nStatus: {order['status']}"
     )
 
     photo_file_id = update.message.photo[-1].file_id
@@ -149,14 +144,6 @@ async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("✅ Screenshot received. Your order is being processed.")
 
 
-# Go back to main menu
-async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    await start(query, context)
-
-
-# Main entry
 def main():
     logger.info(f"Starting bingoshop_bot with Python {sys.version}")
     if sys.version_info >= (3, 12):
@@ -164,15 +151,12 @@ def main():
         raise SystemExit(1)
 
     application = Application.builder().token(TOKEN).build()
-
-    # Handlers
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CallbackQueryHandler(main_menu, pattern="^main_menu$"))
     application.add_handler(CallbackQueryHandler(smtps_menu, pattern="^smtps_menu$"))
     application.add_handler(CallbackQueryHandler(show_product, pattern="^product_"))
     application.add_handler(CallbackQueryHandler(buy_product, pattern="^buy_"))
+    application.add_handler(CallbackQueryHandler(start, pattern="^start_menu$"))
     application.add_handler(MessageHandler(filters.PHOTO, handle_screenshot))
-
     application.run_polling()
 
 
