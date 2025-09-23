@@ -26,28 +26,28 @@ ADMIN_ID = int(os.getenv("ADMIN_ID", 6146268714))
 
 # Get Render environment variables
 RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
-RENDER_GIT_COMMIT = os.getenv('RENDER_GIT_COMMIT', 'unknown')
+PORT = int(os.environ.get('PORT', 8443))
 
 # Wallets
 BTC_WALLET = "3GqQV93WBW3ZWiHfx1JGu6nrgWfgADWL29"
 USDT_WALLET = "TSEC8xaDprqJ21qFZ9pBNBhDHDJTccVUfr"
 
-# Products
+# Products - FIXED: Replaced <br> with \n
 PRODUCTS = {
     "high_limit": {
         "name": "High Limit SMTP",
         "price": 100,
-        "description": "50K Sending Limit<br>Sends To Inbox (Aged Gmail Tested)<br>STARTTLS Encryption Enabled<br>SPF & DMARC Authentication Validated<br>Fresh Hacked SMTP<br>SMS + Email Support<br>7 Day Free Replacements",
+        "description": "50K Sending Limit\nSends To Inbox (Aged Gmail Tested)\nSTARTTLS Encryption Enabled\nSPF & DMARC Authentication Validated\nFresh Hacked SMTP\nSMS + Email Support\n7 Day Free Replacements",
     },
     "spoofable": {
         "name": "Spoofable SMTP",
         "price": 200,
-        "description": "50K Sending Limit<br>Sends To Inbox (Aged Gmail Tested)<br>STARTTLS Encryption Enabled<br>SPF & DMARC Authentication Validated<br>Fresh Hacked SMTP<br>SMS + Email Support<br>Supports Sender Address Spoofing<br>Includes Multiple Spoofing Methods<br>Multi-Provider Spoofing Support<br>7 Day Free Replacements<br>Includes SenderV4 Mailer Script",
+        "description": "50K Sending Limit\nSends To Inbox (Aged Gmail Tested)\nSTARTTLS Encryption Enabled\nSPF & DMARC Authentication Validated\nFresh Hacked SMTP\nSMS + Email Support\nSupports Sender Address Spoofing\nIncludes Multiple Spoofing Methods\nMulti-Provider Spoofing Support\n7 Day Free Replacements\nIncludes SenderV4 Mailer Script",
     },
     "custom_spoofable": {
         "name": "Custom Spoofable SMTP",
         "price": 300,
-        "description": "50K Sending Limit<br>Sends To Inbox (Aged Gmail Tested)<br>STARTTLS Encryption Enabled<br>SPF & DMARC Authentication Validated<br>Fresh Hacked SMTP<br>SMS + Email Support<br>Supports Sender Address Spoofing<br>Includes Multiple Spoofing Methods<br>Multi-Provider Spoofing Support<br>Your Own Custom SMTP Domain Name<br>7 Day Free Replacements<br>Includes SenderV4 Mailer Script",
+        "description": "50K Sending Limit\nSends To Inbox (Aged Gmail Tested)\nSTARTTLS Encryption Enabled\nSPF & DMARC Authentication Validated\nFresh Hacked SMTP\nSMS + Email Support\nSupports Sender Address Spoofing\nIncludes Multiple Spoofing Methods\nMulti-Provider Spoofing Support\nYour Own Custom SMTP Domain Name\n7 Day Free Replacements\nIncludes SenderV4 Mailer Script",
     },
 }
 
@@ -72,7 +72,7 @@ async def smtps_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("High Limit SMTP - $100", callback_data="product_high_limit")],
         [InlineKeyboardButton("Spoofable SMTP - $200", callback_data="product_spoofable")],
         [InlineKeyboardButton("Custom Spoofable SMTP - $300", callback_data="product_custom_spoofable")],
-        [InlineKeyboardButton("🔙 Retour", callback_data="start_menu")],
+        [InlineKeyboardButton("🔙 Back", callback_data="start_menu")],
     ]
     await query.edit_message_text("📦 Choose an SMTP option:", reply_markup=InlineKeyboardMarkup(keyboard))
 
@@ -86,10 +86,18 @@ async def show_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = [
         [InlineKeyboardButton("💳 Buy Now", callback_data=f"buy_{product_id}")],
-        [InlineKeyboardButton("🔙 Retour", callback_data="smtps_menu")],
+        [InlineKeyboardButton("🔙 Back", callback_data="smtps_menu")],
     ]
+    
+    # FIXED: Replaced <br> with \n in the message
+    message_text = (
+        f"<b>{product['name']}</b>\n"
+        f"💵 Price: ${product['price']}\n\n"
+        f"📝 Description:\n{product['description']}"
+    )
+    
     await query.edit_message_text(
-        f"<b>{product['name']}</b>\n💵 Price: ${product['price']}\n\n📝 Description:<br>{product['description']}",
+        message_text,
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="HTML",
     )
@@ -105,13 +113,15 @@ async def buy_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_orders[user_id] = {"product": product["name"], "price": product["price"], "status": "pending_payment"}
 
-    keyboard = [[InlineKeyboardButton("🔙 Retour", callback_data=f"product_{product_id}")]]
+    keyboard = [[InlineKeyboardButton("🔙 Back", callback_data=f"product_{product_id}")]]
+    
+    # FIXED: Replaced <br> with \n
     payment_text = (
-        f"Please send <b>${product['price']}</b> to one of these wallets:<br><br>"
-        f"💰 <b>Bitcoin (BTC):</b><br><code>{BTC_WALLET}</code><br><br>"
-        f"💰 <b>USDT (TRC20):</b><br><code>{USDT_WALLET}</code><br><br>"
-        "After payment, send a screenshot here.<br>"
-        "Your SMTP will be delivered within 7 minutes.<br><br>"
+        f"Please send <b>${product['price']}</b> to one of these wallets:\n\n"
+        f"💰 <b>Bitcoin (BTC):</b>\n<code>{BTC_WALLET}</code>\n\n"
+        f"💰 <b>USDT (TRC20):</b>\n<code>{USDT_WALLET}</code>\n\n"
+        "After payment, send a screenshot here.\n"
+        "Your SMTP will be delivered within 7 minutes.\n\n"
         "Support: @support_bot"
     )
 
@@ -152,7 +162,6 @@ async def health_check(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Health check command to verify the bot is running"""
     await update.message.reply_text(
         f"✅ Bot is running!\n"
-        f"Commit: {RENDER_GIT_COMMIT}\n"
         f"Host: {RENDER_EXTERNAL_HOSTNAME or 'Local'}"
     )
 
@@ -180,15 +189,22 @@ def main():
     # Check if we're running on Render (with webhook) or locally (with polling)
     if RENDER_EXTERNAL_HOSTNAME:
         # Webhook mode for Render
-        webhook_url = f"https://{RENDER_EXTERNAL_HOSTNAME}/webhook"
+        webhook_url = f"https://{RENDER_EXTERNAL_HOSTNAME}/{TOKEN}"
         logger.info(f"Starting webhook mode on {webhook_url}")
         
-        # Set webhook - this is important!
+        try:
+            # Set webhook first
+            application.bot.set_webhook(webhook_url)
+            logger.info("Webhook set successfully")
+        except Exception as e:
+            logger.error(f"Failed to set webhook: {e}")
+        
+        # Start webhook
         application.run_webhook(
             listen="0.0.0.0",
-            port=int(os.environ.get("PORT", 8443)),
-            url_path=TOKEN,
-            webhook_url=webhook_url
+            port=PORT,
+            webhook_url=webhook_url,
+            url_path=TOKEN
         )
     else:
         # Polling mode for local development
