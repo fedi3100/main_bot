@@ -24,6 +24,10 @@ TOKEN = os.getenv("SHOP_BOT_TOKEN", "YOUR_SHOP_BOT_TOKEN")
 ADMIN_BOT_TOKEN = os.getenv("ADMIN_BOT_TOKEN", "YOUR_ADMIN_BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID", 6146268714))
 
+# Get Render environment variables
+RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
+RENDER_GIT_COMMIT = os.getenv('RENDER_GIT_COMMIT', 'unknown')
+
 # Wallets
 BTC_WALLET = "3GqQV93WBW3ZWiHfx1JGu6nrgWfgADWL29"
 USDT_WALLET = "TSEC8xaDprqJ21qFZ9pBNBhDHDJTccVUfr"
@@ -144,20 +148,52 @@ async def handle_screenshot(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("✅ Screenshot received. Your order is being processed.")
 
 
+async def health_check(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Health check command to verify the bot is running"""
+    await update.message.reply_text(
+        f"✅ Bot is running!\n"
+        f"Commit: {RENDER_GIT_COMMIT}\n"
+        f"Host: {RENDER_EXTERNAL_HOSTNAME or 'Local'}"
+    )
+
+
 def main():
     logger.info(f"Starting bingoshop_bot with Python {sys.version}")
+    
+    # Check Python version compatibility
     if sys.version_info >= (3, 12):
         logger.error("python-telegram-bot v20.x is not compatible with Python 3.12+. Use Python 3.11.9.")
         raise SystemExit(1)
 
+    # Create application
     application = Application.builder().token(TOKEN).build()
+    
+    # Add handlers
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("health", health_check))
     application.add_handler(CallbackQueryHandler(smtps_menu, pattern="^smtps_menu$"))
     application.add_handler(CallbackQueryHandler(show_product, pattern="^product_"))
     application.add_handler(CallbackQueryHandler(buy_product, pattern="^buy_"))
     application.add_handler(CallbackQueryHandler(start, pattern="^start_menu$"))
     application.add_handler(MessageHandler(filters.PHOTO, handle_screenshot))
-    application.run_polling()
+
+    # Check if we're running on Render (with webhook) or locally (with polling)
+    if RENDER_EXTERNAL_HOSTNAME:
+        # Webhook mode for Render
+        webhook_url = f"https://{RENDER_EXTERNAL_HOSTNAME}/webhook"
+        logger.info(f"Starting webhook mode on {webhook_url}")
+        
+        # Set webhook - this is important!
+        application.run_webhook(
+            listen="0.0.0.0",
+            port=int(os.environ.get("PORT", 8443)),
+            url_path=TOKEN,
+            webhook_url=webhook_url
+        )
+    else:
+        # Polling mode for local development
+        logger.info("Starting polling mode for local development")
+        application.run_polling()
 
 
 if __name__ == "__main__":
