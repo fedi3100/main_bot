@@ -1,0 +1,1 @@
+-r bingoshop_bot/requirements.txt
