@@ -29,8 +29,8 @@ RENDER_EXTERNAL_HOSTNAME = os.getenv('RENDER_EXTERNAL_HOSTNAME')
 PORT = int(os.environ.get('PORT', 8443))
 
 # Wallets
-BTC_WALLET = "3GqQV93WBW3ZWiHfx1JGu6nrgWfgADWL29"
-USDT_WALLET = "TSEC8xaDprqJ21qFZ9pBNBhDHDJTccVUfr"
+BTC_WALLET = "16LYjmErwNek2gMQkNrkLm2i1QVhjmxSRo"
+USDT_WALLET = "TYJBcBtAheZKCQJkNisuivQ7iuJXvb4eyS"
 
 # Products - FIXED: Replaced <br> with \n
 PRODUCTS = {
